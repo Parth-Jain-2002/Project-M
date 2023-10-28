@@ -93,11 +93,9 @@ class _MessagesListView extends StatelessWidget {
       itemBuilder: (BuildContext context, int i) {
         var message = messages[i];
 
-        // Extract additional details from the message body
-        String amount = extractAmount(message.body);
-        bool isCredited = message.body!.toLowerCase().contains('credited');
-        String entityName = extractEntityName(message.body);
-
+        // Extract additional details from the message body and bring it in a map
+        //var msgDetails = extractDetails(message.body);
+        
         return Card(
           child: Column(
             children: [
@@ -119,19 +117,8 @@ class _MessagesListView extends StatelessWidget {
                     ),
                   ],
                 ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(entityName),
-                    Text(
-                      isCredited ? 'Credited' : 'Debited',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                trailing: Text(amount),
+                // subtitle: Text(msgDetails['entityName'] ?? ''),
+                // trailing: Text(msgDetails['amount'] ?? ''),
               ),
               Text(message.body ?? ''),
             ],
@@ -142,31 +129,51 @@ class _MessagesListView extends StatelessWidget {
     );
   }
 
-  String extractEntityName(String? messageBody) {
-    if (messageBody == null) {
-      return '';
-    }
-  RegExp regExp = RegExp(r'[A-Za-z\s]+(debited|credited)');
-  Match? match = regExp.firstMatch(messageBody);
-  if (match != null) {
-    String entityName = match.group(0) ?? '';
-    return entityName.trim();
-  }
-  return '';
-}
+  extractDetails(String? messageBody){
+    var msgDetails = {
+      'entityName': '',
+      'isCredited': false,
+      'amount': '',
+    };
+    
 
-String extractAmount(String? messageBody) {
-  if (messageBody == null) {
-      return '';
+    // Check if the message is from ICICI Bank
+    if (messageBody!.toLowerCase().contains('icici bank')) {
+      msgDetails = extractDetailsFromIciciBank(messageBody);
     }
-  // Amount can be Rs. 500 or Rs 500
-  RegExp regExp = RegExp(r'Rs\.?\s?\d+');
-  Match? match = regExp.firstMatch(messageBody);
-  if (match != null) {
-    String amount = match.group(0) ?? '';
-    return amount.substring(3);
+
+    return msgDetails;
   }
-  return '';
-}
+
+  extractDetailsFromIciciBank(String? messageBody){
+    // ICICI Bank Acct XX499 debited for Rs 476.70 on 09-Jul-23; Zomato Ltd credited. UPI:355651891355. Call 18002662 for dispute. SMS BLOCK 499 to 9215676766.
+    // We have credited your ICICI Bank Account XX499 with INR 12,500.00 on 03-Jul-23. Info:INF*INFT*032775256931*Isthar. The Available Balance is INR 57,145.35.
+
+    var msgDetails = {
+      'entityName': '',
+      'isCredited': false,
+      'amount': '',
+    };
+
+    // Check if the message is a credit message
+    if (messageBody!.toLowerCase().contains('debited')) {
+      msgDetails['isCredited'] = false;
+
+      // Extract the entity name: Zomato Ltd
+      RegExp regex = new RegExp(r'(?<=; ).*?(?= credited)');
+      var entityName = regex.firstMatch(messageBody)?.group(0);
+      msgDetails['entityName'] = entityName!;
+      
+      regex = new RegExp(r'(?<=debited for Rs ).*?(?= on)');
+      var amount = regex.firstMatch(messageBody)?.group(0);
+      msgDetails['amount'] = amount!;
+
+      return msgDetails;
+    }
+    else{
+      msgDetails['isCredited'] = true;
+      return msgDetails;
+    }
+  }
 
 }
