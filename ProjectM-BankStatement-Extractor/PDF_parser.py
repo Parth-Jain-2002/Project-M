@@ -2,14 +2,9 @@ import pandas as pd
 import re
 import csv
 import os
-
 from nanonets import NANONETSOCR
-model = NANONETSOCR()
-model.set_token('e1db0cce-7721-11ee-86cb-eab1013a2ac4')
-
 
 # Initialise
-from nanonets import NANONETSOCR
 model = NANONETSOCR()
 
 # Authenticate
@@ -17,7 +12,7 @@ model.set_token('e1db0cce-7721-11ee-86cb-eab1013a2ac4')
 
 
 # PDF / Image to CSV
-FILE_PATH = '/content/Bank-Statement-Template-1-TemplateLab-1.pdf'
+FILE_PATH = './Bank-Statement-Template-1-TemplateLab-1.pdf'
 model.convert_to_csv(FILE_PATH, output_file_name = 'output.csv')
 
 # Extracting each table in separate csv
