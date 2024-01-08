@@ -1,0 +1,53 @@
+{
+  "version": "0.2",
+  "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/master/cspell.schema.json",
+  "language": "en",
+  "words": [
+    "bitjson",
+    "bitauth",
+    "cimg",
+    "circleci",
+    "codecov",
+    "commitlint",
+    "dependabot",
+    "editorconfig",
+    "esnext",
+    "execa",
+    "exponentiate",
+    "globby",
+    "libauth",
+    "mkdir",
+    "prettierignore",
+    "sandboxed",
+    "transpiled",
+    "typedoc",
+    "untracked"
+  ],
+  "ignoreWords": [
+    "Axis",
+    "ICICI",
+    "Kotak",
+    "HDFC",
+    "Standard Charted",
+    "IDFC",
+    "Niyo",
+    "HSBC",
+    "Citi",
+    "Sodexo",
+    "ICICI",
+    "Uni Card",
+    "Indusind",
+    "Paytm",
+    "Amazon pay",
+    "Lazypay",
+    "Simpl"
+  ],
+  "flagWords": [],
+  "ignorePaths": [
+    "package.json",
+    "package-lock.json",
+    "yarn.lock",
+    "tsconfig.json",
+    "node_modules/**"
+  ]
+}

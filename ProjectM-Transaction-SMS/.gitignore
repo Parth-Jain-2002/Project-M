@@ -1,0 +1,15 @@
+diff
+.idea/*
+.nyc_output
+build
+node_modules
+sample
+coverage
+*.log
+yarn.lock
+testCases.xlsx
+~$testCases.xlsx
+testCases.json
+.DS_Store
+message.js
+data/*
