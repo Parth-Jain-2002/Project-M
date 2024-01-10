@@ -3,13 +3,13 @@ from nanonets import NANONETSOCR
 import pandas as pd
 model = NANONETSOCR()
 import os
-
+import re
 import csv
+import json
 
 # Authenticate
-model.set_token('7a01318e-7a32-11ee-b844-fed160b8e099')
+model.set_token('721f6390-ad62-11ee-9565-528da5c2e422')
 
-import json
 app = Flask(__name__)
 
 @app.route('/upload_pdf', methods=['POST'])
@@ -24,12 +24,45 @@ def upload_pdf():
         if pdf_file.filename != '':
             file_path = os.path.join(upload_directory, pdf_file.filename)
             pdf_file.save(file_path)
-        # pred_json = model.convert_to_txt('./saved/'+pdf_file.filename)  # Assuming 'convert_to_prediction' method requires a file path
+       
             model.convert_to_txt('./saved/'+pdf_file.filename, output_file_name="./output.txt", formatting="lines")
 
         text = ""
-        with open('./output.txt') as f:
+        with open('./output.txt','r') as f:
             text = f.read()
+        lowercase_content=text.lower()
+
+        with open('./output.txt','w') as f:
+            f.write(lowercase_content)
+
+        search_strings = ['a/c no', 'account no', 'account number','a/c']
+        year_search_strings=['statement period','statement of account','statement date']
+        found_digits=''
+        start_year=''
+        end_year=''
+
+        with open('./output.txt', 'r') as file:
+            
+            for line_number, line in enumerate(file, start=1):
+               
+                for search_string in search_strings:
+                    if search_string in line:
+                        
+                        match = re.search(f'{search_string}\D*(\d+)', line)
+                        if match:
+                            found_digits = match.group(1)
+                
+                for search_string in year_search_strings:
+                    pattern = re.compile(fr'{search_string}.*?(\d{{4}})',re.DOTALL)
+                    match = re.search(pattern, text)
+                    if match:
+                        start_year=match.group(1)
+
+                pattern=re.compile(fr'{start_year+" to"}.*?(\d{{4}})',re.DOTALL)
+                match=re.search(pattern,text)
+                if match:          
+                    end_year=match.group(1)
+                  
 
         print(text)
 
@@ -37,9 +70,8 @@ def upload_pdf():
         csv_text = ""
         transactions=[]
 
+
         model.convert_to_csv('./saved/'+pdf_file.filename,"./output.csv")
-        # df=pd.read_csv('./output.csv')
-        # print(df)
         with open('./output.csv') as f:
             reader = csv.reader(f)
             lines = list(reader)
@@ -54,31 +86,69 @@ def upload_pdf():
         transaction_df=df[df.iloc[:, -1].notna() & (df.count(axis=1) >= 4) ]
         transaction_df.iloc[0] = transaction_df.iloc[0].str.lower()
 
-        # matching_columns = transaction_df.eq('description')|(transaction_df.eq('details') | transaction_df.eq('remarks'))|(transaction_df.eq('particulars') | transaction_df.eq('purpose'))|(transaction_df.eq('transactional information') | transaction_df.eq('details of transaction'))|(transaction_df.eq('transaction particulars') | transaction_df.eq('comments'))|(transaction_df.eq('description') | transaction_df.eq('payment details'))
-        # matching_column_label = matching_columns.index[matching_columns].tolist()
+        
         keywords = ['description', 'details', 'remarks', 'particulars', 'purpose',
                     'transactional information', 'details of transaction',
                     'transaction particulars', 'comments', 'payment details']
 
-        # Check if any keyword is present in the first row of each column
+       
         matching_columns_first_row = transaction_df.iloc[0].apply(lambda cell: any(keyword in cell.lower() for keyword in keywords))
 
-        # Find column labels where at least one match is found
         matching_column_label = matching_columns_first_row.index[matching_columns_first_row].tolist()
 
         description_column = transaction_df[matching_column_label]
+        if(transaction_df.iloc[0,1]=='value date'):
+            selected_columns = transaction_df.iloc[:, [1,-3,-2,-1]] 
+            selected_columns=selected_columns.rename(columns={'Unnamed: 1':'Unnamed: 0'})
+        else:
+            selected_columns = transaction_df.iloc[:, [0,-3,-2,-1]] 
 
-        selected_columns = transaction_df.iloc[:, [0,-3,-2,-1]] 
-        
+        print(selected_columns.columns)
+
         result_df = pd.concat([selected_columns, description_column], axis=1)
+        
+        
 
 
-        df_without_balance =result_df[result_df.iloc[:, -2] != 'balance']
 
+        def add_default_year(value, default_years):
+   
+            match = re.search(r'\b\d{4}\b', str(value))
 
-        array_representation = df_without_balance.values
+            if match:
+                
+                return value
+            else:
+                
+                match_month = re.search(r'\b(?:January|Jan|February|Feb|March|Mar|April|Apr|May|June|July|Jul|Aug|August|Sept|September|October|Oct|November|Nov|December|Dec)\b', str(value))
+                match_date=re.search(r'\b\d{2}\b',str(value))
+                if match_month:
+                    if match_date:
+                        date=match_date.group()
+                    else: 
+                        date='09'
+                    month = match_month.group().lower()
+                    
+                    default_year = default_years.get(month, '')
+                    month=default_month.get(month,'')
+                   
+                    return f'{default_year}-{date}-{month}'
+                
+                else:
+                    return value
+        default_month={'jan': '01', 'feb': '02', 'mar': '03','apr':'04','may':'05','june':'06','jul':'07','aug':'08','sept':'09','oct':'10','nov':'11','dec':'12'}
+        default_years = {'jan': end_year, 'feb': end_year, 'mar': end_year,'apr':start_year,'may':start_year,'june':start_year,'jul':start_year,'aug':start_year,'sept':start_year,'oct':start_year,'nov':start_year,'dec':start_year}
 
-        return jsonify(array_representation.tolist())
+        result_df['Unnamed: 0']= result_df['Unnamed: 0'].apply(add_default_year, default_years=default_years)
+        print(result_df)
+
+        
+        result_df['Unnamed: 0'] = pd.to_datetime(result_df['Unnamed: 0'],format='mixed',errors='coerce')
+        result_df = result_df.dropna(subset=['Unnamed: 0'])
+        result_df = result_df.where(pd.notna(result_df), None)
+        array_representation = result_df.values
+
+        return jsonify({'transactions':array_representation.tolist(),'account_no':found_digits,'start_year':start_year,'end_year':end_year})
     
     else:
         return jsonify({'error': 'No PDF file received'})

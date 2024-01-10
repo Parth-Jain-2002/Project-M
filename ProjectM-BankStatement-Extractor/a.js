@@ -7,47 +7,42 @@ const multer  = require('multer');
 const upload = multer({ dest: 'uploads/' });
 var cors = require('cors');
 const FormData = require('form-data');
-// const fetch = require('node-fetch');
 const axios = require('axios');
 
 const app=express();
 app.use(cors());
 
-// mongoose.connect('mongodb+srv://2021mcb1244:abcd123@cluster0.jxoku9v.mongodb.net/?retryWrites=true&w=majority')
+mongoose.connect('mongodb+srv://2021mcb1244:abcd123@cluster0.jxoku9v.mongodb.net/?retryWrites=true&w=majority')
 
-// const userSchema=new mongoose.Schema({
-//     clientId:String,
-//     transaction:[{
-//         account_id:String,
-//         name:String,
-//         address:String,
-//         data:String,
-//         currency:String,
-//         transaction:Array,
-//     }]
-// })
-// const User=mongoose.model("User",userSchema);
+const userSchema=new mongoose.Schema({
+  clientId:String,
+  transactions:[{
+      account_no:String,
+      transaction: Array
+  }]
+})
+const User=mongoose.model("User",userSchema);
 
-// function stringToNumber(stringValue) {
-//     if(typeof stringValue==="string"&&stringValue){
+function stringToNumber(stringValue) {
+    if(typeof stringValue==="string"&&stringValue){
 
-//         const stringWithoutCommas = stringValue.replace(/[^0-9.]/g, '');
-//         const numberValue = parseFloat(stringWithoutCommas);
-//         return numberValue;
-//     }
-//     return stringValue;
-//   }
+        const stringWithoutCommas = stringValue.replace(/[^0-9.]/g, '');
+        const numberValue = parseFloat(stringWithoutCommas);
+        return numberValue;
+    }
+    return stringValue;
+  }
 
 
-// async function getUser(){
-//     const users=await User.find();
-//     return users;
-// }
+async function getUser(){
+    const users=await User.find();
+    return users;
+}
 
 app.get('/',(req,res)=>{
-    // getUser().then((users)=>{
-    //     res.send(users);
-    // })
+    getUser().then((users)=>{
+        res.send(users);
+    })
     res.send('ok')
 })
 
@@ -61,15 +56,63 @@ form.append('pdfFile', fs.createReadStream(pdfFilePath));
 
 const request_config = {
   headers: {
-    // 'Authorization': `Bearer ${access_token}`,
+
     ...form.getHeaders()
   }
 };
 
 axios.post('http://127.0.0.1:7000/upload_pdf', form, request_config)
 .then(response => {
-    res.send(response.data)
+    let account_no=response.data.account_no
     
+    let transactions_data=response.data.transactions
+    
+    let transactions=transactions_data.map(transaction=>{
+      return {
+        date:transaction[0],
+        description:transaction[4],
+        withdrawals:transaction[1]?stringToNumber(transaction[1]):'',
+        deposits:transaction[2]?stringToNumber(transaction[2]):'',
+        balance:stringToNumber(transaction[3]),
+      }
+    })
+    
+    async function run(){
+      await User.findOne({clientId:clientId})
+      .then(function(foundUser){
+          let flag=-1;
+          if(foundUser){
+              foundUser.transactions.forEach((foundUser)=>{
+
+                  if(foundUser.account_no===account_no){
+                      foundUser.transaction=[...foundUser.transaction,...transactions];
+                      flag=1;
+                  }
+              })
+              if(flag===-1){
+                  foundUser.transactions.push({
+                      account_no:account_no,
+                      transaction:transactions,
+              })}
+              foundUser.save();
+              
+             
+          }
+          else{
+              const user=new User({clientId:clientId,
+              transactions:[{
+                  account_no:account_no,
+                  transaction:transactions,
+              }]});
+              user.save();
+             
+             }
+          })
+        }
+
+        run();
+
+        res.status(200).json({message:'PDF parsed successfully'})
 })
 .catch(error => {
     console.error('Error:', error);
@@ -80,10 +123,6 @@ axios.post('http://127.0.0.1:7000/upload_pdf', form, request_config)
 })
 
 
-app.listen(4000, function() {
+app.listen(3000, function() {
 console.log("Server started on port 3000");
 })
-
-
-
-    
