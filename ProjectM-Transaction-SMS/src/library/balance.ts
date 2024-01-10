@@ -1,36 +1,36 @@
 import {
   availableBalanceKeywords,
   outstandingBalanceKeywords,
-} from '../constants';
-import { IBalanceKeyWordsType, TMessageType } from '../interface';
-import { getProcessedMessage, padCurrencyValue } from '../utils';
+} from "./constants.ts";
+import { IBalanceKeyWordsType, TMessageType } from "./interface.ts";
+import { getProcessedMessage, padCurrencyValue } from "./utils.ts";
 
 const extractBalance = (
   index: number,
   message: string,
-  length: number
+  length: number,
 ): string => {
-  let balance = '';
+  let balance = "";
   let sawNumber = false;
   let invalidCharCount = 0;
-  let char = '';
+  let char = "";
   let start = index;
   while (start < length) {
     char = message[start];
 
-    if (char >= '0' && char <= '9') {
+    if (char >= "0" && char <= "9") {
       sawNumber = true;
       // is_start = false;
       balance += char;
     } else if (sawNumber) {
-      if (char === '.') {
+      if (char === ".") {
         if (invalidCharCount === 1) {
           break;
         } else {
           balance += char;
           invalidCharCount += 1;
         }
-      } else if (char !== ',') {
+      } else if (char !== ",") {
         break;
       }
     }
@@ -43,30 +43,30 @@ const extractBalance = (
 
 const findNonStandardBalance = (
   message: string,
-  keyWordType: IBalanceKeyWordsType = IBalanceKeyWordsType.AVAILABLE
+  keyWordType: IBalanceKeyWordsType = IBalanceKeyWordsType.AVAILABLE,
 ) => {
   const balanceKeywords =
     keyWordType === IBalanceKeyWordsType.AVAILABLE
       ? availableBalanceKeywords
       : outstandingBalanceKeywords;
 
-  const balKeywordRegex = `(${balanceKeywords.join('|')})`.replace('/', '\\/');
-  const amountRegex = '([\\d]+\\.[\\d]+|[\\d]+)';
+  const balKeywordRegex = `(${balanceKeywords.join("|")})`.replace("/", "\\/");
+  const amountRegex = "([\\d]+\\.[\\d]+|[\\d]+)";
 
   // balance 100.00
-  let regex = new RegExp(`${balKeywordRegex}\\s*${amountRegex}`, 'gi');
+  let regex = new RegExp(`${balKeywordRegex}\\s*${amountRegex}`, "gi");
   let matches = message.match(regex);
   if (matches && matches.length > 0) {
-    const balance = matches[0].split(' ').pop(); // return only first match
-    return Number.isNaN(Number(balance)) ? '' : balance;
+    const balance = matches[0].split(" ").pop(); // return only first match
+    return Number.isNaN(Number(balance)) ? "" : balance;
   }
 
   // 100.00 available
-  regex = new RegExp(`${amountRegex}\\s*${balKeywordRegex}`, 'gi');
+  regex = new RegExp(`${amountRegex}\\s*${balKeywordRegex}`, "gi");
   matches = message.match(regex);
   if (matches && matches.length > 0) {
-    const balance = matches[0].split(' ')[0]; // return only first match
-    return Number.isNaN(Number(balance)) ? '' : balance;
+    const balance = matches[0].split(" ")[0]; // return only first match
+    return Number.isNaN(Number(balance)) ? "" : balance;
   }
 
   return null;
@@ -74,19 +74,18 @@ const findNonStandardBalance = (
 
 const getBalance = (
   message: TMessageType,
-  keyWordType: IBalanceKeyWordsType = IBalanceKeyWordsType.AVAILABLE
+  keyWordType: IBalanceKeyWordsType = IBalanceKeyWordsType.AVAILABLE,
 ) => {
   const processedMessage = getProcessedMessage(message);
-  const messageString = processedMessage.join(' ');
+  const messageString = processedMessage.join(" ");
   let indexOfKeyword = -1;
-  let balance = '';
+  let balance = "";
 
   const balanceKeywords =
     keyWordType === IBalanceKeyWordsType.AVAILABLE
       ? availableBalanceKeywords
       : outstandingBalanceKeywords;
 
-  // eslint-disable-next-line no-restricted-syntax
   for (const word of balanceKeywords) {
     indexOfKeyword = messageString.indexOf(word);
 
@@ -94,7 +93,6 @@ const getBalance = (
       indexOfKeyword += word.length;
       break;
     } else {
-      // eslint-disable-next-line no-continue
       continue;
     }
   }
@@ -112,7 +110,7 @@ const getBalance = (
     // add the current char at the end
     nextThreeChars += messageString[index];
 
-    if (nextThreeChars === 'rs.') {
+    if (nextThreeChars === "rs.") {
       indexOfRs = index + 2;
       break;
     }
@@ -123,7 +121,7 @@ const getBalance = (
   // no occurence of 'rs.'
   if (indexOfRs === -1) {
     // check for non standard balance
-    balance = findNonStandardBalance(messageString);
+    balance = findNonStandardBalance(messageString) ?? "";
     return balance ? padCurrencyValue(balance) : null;
   }
 
