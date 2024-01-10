@@ -1,48 +1,50 @@
 // import { upiKeywords } from '../constants';
-import { upiKeywords } from '../constants';
-import { TMessageType } from '../interface';
-import { getNextWords, getProcessedMessage, isNumber } from '../utils';
+import { upiKeywords } from "./constants.ts";
+import { TMessageType } from "./interface.ts";
+import { getNextWords, getProcessedMessage, isNumber } from "./utils.ts";
 
 const extractMerchantInfo = (message: TMessageType) => {
   const processedMessage = getProcessedMessage(message);
-  const messageString = processedMessage.join(' ');
-  const merchantInfo = {
-    merchantName: null,
-    transactionId: null,
+  const messageString = processedMessage.join(" ");
+  const transactionDetails: {
+    merchant: string | null;
+    referenceNo: string | null;
+  } = {
+    merchant: null,
+    referenceNo: null,
   };
-  if (processedMessage.includes('vpa')) {
-    const idx = processedMessage.indexOf('vpa');
+  if (processedMessage.includes("vpa")) {
+    const idx = processedMessage.indexOf("vpa");
     // if keyword vpa is not the last one
     if (idx < processedMessage.length - 1) {
       const nextStr = processedMessage[idx + 1];
-      const [name] = nextStr.replaceAll(/\(|\)/gi, ' ').split(' ');
-      merchantInfo.merchantName = name;
+      const [name] = nextStr.replaceAll(/\(|\)/gi, " ").split(" ");
+      transactionDetails.merchant = name;
     }
   }
 
-  let match = '';
+  let match = "";
   for (let i = 0; i < upiKeywords.length; i += 1) {
     const keyword = upiKeywords[i];
     const idx = messageString.indexOf(keyword);
     if (idx > 0) {
       match = keyword;
-      break;
     }
   }
 
   if (match) {
     const nextWord = getNextWords(messageString, match);
     if (isNumber(nextWord)) {
-      merchantInfo.transactionId = nextWord;
-    } else if (merchantInfo.merchantName) {
+      transactionDetails.referenceNo = nextWord;
+    } else if (transactionDetails.merchant) {
       const [longestNumeric] = nextWord
         .split(/[^0-9]/gi)
         .sort((a, b) => b.length - a.length)[0];
       if (longestNumeric) {
-        merchantInfo.transactionId = longestNumeric;
+        transactionDetails.referenceNo = longestNumeric;
       }
     } else {
-      merchantInfo.merchantName = nextWord;
+      transactionDetails.merchant = nextWord;
     }
   }
 
@@ -57,7 +59,7 @@ const extractMerchantInfo = (message: TMessageType) => {
       }
     }
   } */
-  return merchantInfo;
+  return transactionDetails;
 };
 
 export default extractMerchantInfo;

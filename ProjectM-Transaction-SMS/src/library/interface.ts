@@ -1,12 +1,12 @@
 export enum IAccountType {
-  CARD = 'CARD',
-  WALLET = 'WALLET',
-  ACCOUNT = 'ACCOUNT',
+  CARD = "CARD",
+  WALLET = "WALLET",
+  ACCOUNT = "ACCOUNT",
 }
 
 export enum IBalanceKeyWordsType {
-  AVAILABLE = 'AVAILABLE',
-  OUTSTANDING = 'OUTSTANDING',
+  AVAILABLE = "AVAILABLE",
+  OUTSTANDING = "OUTSTANDING",
 }
 
 export interface IAccountInfo {
@@ -21,15 +21,19 @@ export interface IBalance {
 }
 
 export type TMessageType = string | string[];
-export type TTransactionType = 'debit' | 'credit' | null;
+export type TTransactionType = "debit" | "credit" | null;
+
+export interface ITransaction {
+  type: TTransactionType | null;
+  amount: string | null;
+  referenceNo: string | null;
+  merchant: string | null;
+}
 
 export interface ITransactionInfo {
   account: IAccountInfo;
-  transactionAmount: string | null;
-  transactionType: TTransactionType;
   balance: IBalance | null;
-  transactionId: string | null;
-  merchantName: string | null;
+  transaction: ITransaction;
 }
 
 export interface ICombinedWords {
