@@ -1,14 +1,17 @@
 from flask import Flask, request, jsonify
 from nanonets import NANONETSOCR
 import pandas as pd
-model = NANONETSOCR()
+from dotenv import load_dotenv
 import os
 import re
 import csv
 import json
 
+load_dotenv()
+model_id=os.getenv('MODEL_ID')
+model = NANONETSOCR()
 # Authenticate
-model.set_token('721f6390-ad62-11ee-9565-528da5c2e422')
+model.set_token(model_id)
 
 app = Flask(__name__)
 
@@ -106,7 +109,7 @@ def upload_pdf():
         matching_column_label = matching_columns_first_row.index[matching_columns_first_row].tolist()
 
         description_column = transaction_df[matching_column_label]
-        if(transaction_df.iloc[0,1]=='value date'):
+        if(transaction_df.iloc[1,0]==transaction_df.iloc[1,1]):
             selected_columns = transaction_df.iloc[:, [1,-3,-2,-1]] 
             selected_columns=selected_columns.rename(columns={'Unnamed: 1':'Unnamed: 0'})
         else:

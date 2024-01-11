@@ -7,12 +7,14 @@ const multer  = require('multer');
 var cors = require('cors');
 const FormData = require('form-data');
 const axios = require('axios');
+require('dotenv').config();
+const uri=process.env.MONGO_URI
 
 const upload = multer({ dest: 'uploads/' });
 const app=express();
 app.use(cors());
 
-mongoose.connect('mongodb+srv://2021mcb1244:abcd123@cluster0.jxoku9v.mongodb.net/?retryWrites=true&w=majority')
+mongoose.connect(uri)
 
 const userSchema=new mongoose.Schema({
   clientId:String,
