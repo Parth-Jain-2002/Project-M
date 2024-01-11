@@ -4,11 +4,11 @@ const fs = require('fs');
 const path = require('path');
 var request = require('request')
 const multer  = require('multer');
-const upload = multer({ dest: 'uploads/' });
 var cors = require('cors');
 const FormData = require('form-data');
 const axios = require('axios');
 
+const upload = multer({ dest: 'uploads/' });
 const app=express();
 app.use(cors());
 
@@ -22,6 +22,8 @@ const userSchema=new mongoose.Schema({
   }]
 })
 const User=mongoose.model("User",userSchema);
+
+//Converts string to number
 
 function stringToNumber(stringValue) {
     if(typeof stringValue==="string"&&stringValue){
@@ -39,6 +41,7 @@ async function getUser(){
     return users;
 }
 
+//Gets the list of users
 app.get('/',(req,res)=>{
     getUser().then((users)=>{
         res.send(users);
@@ -46,23 +49,24 @@ app.get('/',(req,res)=>{
     res.send('ok')
 })
 
+
 app.post('/',upload.single('file'),(req,res)=>{
     const clientId=req.body.clientId;
     const pdfFilePath = req.file.path;
 
-    // Read the PDF file as binary data
+// Read the PDF file as binary data
 const form = new FormData();
 form.append('pdfFile', fs.createReadStream(pdfFilePath));
 
 const request_config = {
   headers: {
-
     ...form.getHeaders()
   }
 };
 
 axios.post('http://127.0.0.1:7000/upload_pdf', form, request_config)
 .then(response => {
+    
     let account_no=response.data.account_no
     
     let transactions_data=response.data.transactions
@@ -77,6 +81,7 @@ axios.post('http://127.0.0.1:7000/upload_pdf', form, request_config)
       }
     })
     
+    //stores the transactions in database
     async function run(){
       await User.findOne({clientId:clientId})
       .then(function(foundUser){
@@ -114,9 +119,10 @@ axios.post('http://127.0.0.1:7000/upload_pdf', form, request_config)
 
         res.status(200).json({message:'PDF parsed successfully'})
 })
+//Error handling
 .catch(error => {
     console.error('Error:', error);
-    res.status(500).json({ error: 'Error sending PDF. to Python server' });
+    res.status(500).json({ error: 'Error sending PDF to Python server' });
 });
 
 
