@@ -1,2 +1,0 @@
-ocr-nanonets-wrapper
-pandas

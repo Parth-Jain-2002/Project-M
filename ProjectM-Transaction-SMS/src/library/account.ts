@@ -1,16 +1,16 @@
-import { combinedWords, wallets } from '../constants';
-import { IAccountInfo, IAccountType, TMessageType } from '../interface';
+import { combinedWords, wallets } from "./constants.ts";
+import { IAccountInfo, IAccountType, TMessageType } from "./interface.ts";
 import {
   extractBondedAccountNo,
   getProcessedMessage,
   trimLeadingAndTrailingChars,
-} from '../utils';
+} from "./utils.ts";
 
 const getCard = (message: string[]): IAccountInfo => {
-  let combinedCardName = '';
+  let combinedCardName = "";
   const cardIndex = message.findIndex(
     (word) =>
-      word === 'card' ||
+      word === "card" ||
       combinedWords // Any combined word of card type
         .filter((w) => w.type === IAccountType.CARD)
         .some((w) => {
@@ -19,7 +19,7 @@ const getCard = (message: string[]): IAccountInfo => {
             return true;
           }
           return false;
-        })
+        }),
   );
   const card: IAccountInfo = { type: null, name: null, number: null };
 
@@ -52,17 +52,15 @@ const getAccount = (message: TMessageType): IAccountInfo => {
     number: null,
   };
 
-  // eslint-disable-next-line no-restricted-syntax
   for (const [index, word] of processedMessage.entries()) {
-    if (word === 'ac') {
+    if (word === "ac") {
       if (index + 1 < processedMessage.length) {
         const accountNo = trimLeadingAndTrailingChars(
-          processedMessage[index + 1]
+          processedMessage[index + 1],
         );
 
         if (Number.isNaN(Number(accountNo))) {
           // continue searching for a valid account number
-          // eslint-disable-next-line no-continue
           continue;
         } else {
           accountIndex = index;
@@ -72,14 +70,12 @@ const getAccount = (message: TMessageType): IAccountInfo => {
         }
       } else {
         // continue searching for a valid account number
-        // eslint-disable-next-line no-continue
         continue;
       }
-    } else if (word.includes('ac')) {
+    } else if (word.includes("ac")) {
       const extractedAccountNo = extractBondedAccountNo(word);
 
-      if (extractedAccountNo === '') {
-        // eslint-disable-next-line no-continue
+      if (extractedAccountNo === "") {
         continue;
       } else {
         accountIndex = index;
@@ -113,8 +109,8 @@ const getAccount = (message: TMessageType): IAccountInfo => {
       .find((w) => {
         return processedMessage.includes(w.word);
       });
-    account.type = specialAccount?.type;
-    account.name = specialAccount?.word;
+    account.type = specialAccount?.type ?? null;
+    account.name = specialAccount?.word ?? null;
   }
 
   // Extract last 4 digits of account number
