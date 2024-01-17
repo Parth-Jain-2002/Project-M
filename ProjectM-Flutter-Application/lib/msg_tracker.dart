@@ -3,6 +3,8 @@ import 'package:flutter_sms_inbox/flutter_sms_inbox.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class SmsTracker extends StatefulWidget {
+  const SmsTracker({super.key});
+
   @override
   _SmsTrackerState createState() => _SmsTrackerState();
 }
@@ -110,7 +112,7 @@ class _MessagesListView extends StatelessWidget {
                     Text(message.sender ?? ''),
                     Text(
                       message.date?.toString() ?? '',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12,
                         color: Colors.grey,
                       ),
@@ -160,11 +162,11 @@ class _MessagesListView extends StatelessWidget {
       msgDetails['isCredited'] = false;
 
       // Extract the entity name: Zomato Ltd
-      RegExp regex = new RegExp(r'(?<=; ).*?(?= credited)');
+      RegExp regex = RegExp(r'(?<=; ).*?(?= credited)');
       var entityName = regex.firstMatch(messageBody)?.group(0);
       msgDetails['entityName'] = entityName!;
       
-      regex = new RegExp(r'(?<=debited for Rs ).*?(?= on)');
+      regex = RegExp(r'(?<=debited for Rs ).*?(?= on)');
       var amount = regex.firstMatch(messageBody)?.group(0);
       msgDetails['amount'] = amount!;
 
