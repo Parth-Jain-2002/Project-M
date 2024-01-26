@@ -81,9 +81,8 @@ class _SmsTrackerState extends State<SmsTracker> {
 
 class _MessagesListView extends StatelessWidget {
   const _MessagesListView({
-    Key? key,
     required this.messages,
-  }) : super(key: key);
+  });
 
   final List<SmsMessage> messages;
 
