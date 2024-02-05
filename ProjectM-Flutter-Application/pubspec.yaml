@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   permission_handler: ^11.2.0
   flutter_sms_inbox: ^1.0.3
+  get:
 
 dev_dependencies:
   flutter_test:
@@ -65,6 +66,11 @@ flutter:
     - assets/img/login.png
     - assets/img/loginbtn.png
     - assets/img/signup.png
+    - assets/img/profile.png
+    - assets/img/profile1.png
+    - assets/img/f.png
+    - assets/img/g.png
+    - assets/img/t.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
