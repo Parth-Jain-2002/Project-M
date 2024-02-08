@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/gestures.dart';
+import 'package:projectm/auth_controller.dart';
 import 'package:projectm/signup_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -12,6 +13,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  var emailController = TextEditingController();
+    var passwordController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     double w=MediaQuery.of(context).size.width;
@@ -75,7 +78,8 @@ class _LoginPageState extends State<LoginPage> {
                         )
                       ]
                     ),
-                    child: TextField(//Text field of Box 1             
+                    child: TextField(//Text field of Box 1    
+                    controller: emailController,         
                       decoration: InputDecoration(
                         hintText: "Email",
                       prefixIcon: Icon(Icons.email,color: Colors.deepOrangeAccent,),
@@ -113,7 +117,9 @@ class _LoginPageState extends State<LoginPage> {
                           )
                         ]
                     ),
-                    child: TextField(// Text field of Box 2                 
+                    child: TextField(// Text field of Box 2    
+                    controller: passwordController,
+                    obscureText: true,             
                       decoration: InputDecoration(
                         hintText: "Password",
                       prefixIcon: Icon(Icons.password_outlined,color: Colors.deepOrangeAccent,),
@@ -154,29 +160,34 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
             SizedBox(height: 40,),
-            Container(//Image Container
-              width: w*0.5,//Sets the width of the container
-              height: h*0.08,//Sets the height of the container
-        
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30),
-                //Adding image to the container
-                image: DecorationImage(
-                  image: AssetImage('assets/img/loginbtn.png'),
-                  fit: BoxFit.cover //To make the image fit the container
-                )
-              ),
-              child: Center(
-                child: Text(
-                  "Sign In",
-                  style: TextStyle(
-                    fontSize: 36,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold
-                  ),
+            GestureDetector(
+              onTap: (){
+                AuthController.instance.login(emailController.text, passwordController.text);//On tapping sign in button, the user will be logged in
+              },
+              child: Container(//Image Container
+                width: w*0.5,//Sets the width of the container
+                height: h*0.08,//Sets the height of the container
+                      
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(30),
+                  //Adding image to the container
+                  image: DecorationImage(
+                    image: AssetImage('assets/img/loginbtn.png'),
+                    fit: BoxFit.cover //To make the image fit the container
+                  )
                 ),
-              )
-              ),
+                child: Center(
+                  child: Text(
+                    "Sign In",
+                    style: TextStyle(
+                      fontSize: 36,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold
+                    ),
+                  ),
+                )
+                ),
+            ),
             SizedBox(height: w*0.18,),
             RichText(text: TextSpan(
               text: "Don't have an account? ",

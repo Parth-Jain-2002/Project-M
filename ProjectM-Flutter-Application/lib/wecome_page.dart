@@ -1,9 +1,11 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:projectm/auth_controller.dart';
 
 class WelcomePage extends StatelessWidget {
-  const WelcomePage({super.key});
+  String email;
+  WelcomePage({Key? key,required this.email}):super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +70,7 @@ class WelcomePage extends StatelessWidget {
                           color: Colors.black54),
                     ),
                     Text(
-                      "sample@gmai.com",
+                      email,
                       style: TextStyle(fontSize: 18, color: Colors.grey[500]),
                     )
                   ],
@@ -77,28 +79,33 @@ class WelcomePage extends StatelessWidget {
               SizedBox(
                 height: 200,
               ),
-              Container(
-                  //Sign Out Button  Container
-                  width: w * 0.5, //Sets the width of the container
-                  height: h * 0.08, //Sets the height of the container
-
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(30),
-                      //Adding image to the container
-                      image: DecorationImage(
-                          image: AssetImage('assets/img/loginbtn.png'),
-                          fit:
-                              BoxFit.cover //To make the image fit the container
-                          )),
-                  child: Center(
-                    child: Text(
-                      "Sign Out",
-                      style: TextStyle(
-                          fontSize: 36,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  )),
+              GestureDetector(
+                onTap: (){
+                  AuthController.instance.logout();//On tapping signout button, the user will be logged out
+                },
+                child: Container(
+                    //Sign Out Button  Container
+                    width: w * 0.5, //Sets the width of the container
+                    height: h * 0.08, //Sets the height of the container
+                
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(30),
+                        //Adding image to the container
+                        image: DecorationImage(
+                            image: AssetImage('assets/img/loginbtn.png'),
+                            fit:
+                                BoxFit.cover //To make the image fit the container
+                            )),
+                    child: Center(
+                      child: Text(
+                        "Sign Out",
+                        style: TextStyle(
+                            fontSize: 36,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    )),
+              ),
             ],
           ),
         ));

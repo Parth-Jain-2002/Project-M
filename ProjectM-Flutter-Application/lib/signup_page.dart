@@ -3,12 +3,17 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:projectm/auth_controller.dart';
+import 'package:projectm/auth_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SignUpPage extends StatelessWidget {
   const SignUpPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    var emailController = TextEditingController();
+    var passwordController = TextEditingController();
     List images = ["f.png", "g.png", "t.png"];
     double w = MediaQuery.of(context).size.width;
     double h = MediaQuery.of(context).size.height;
@@ -80,6 +85,7 @@ class SignUpPage extends StatelessWidget {
                           ]),
                       child: TextField(
                         //Text field of Box 1
+                        controller: emailController,
                         decoration: InputDecoration(
                             hintText: "Email",
                             prefixIcon: Icon(
@@ -116,6 +122,8 @@ class SignUpPage extends StatelessWidget {
                           ]),
                       child: TextField(
                         // Text field of Box 2
+                        controller: passwordController,
+                        obscureText: true,
                         decoration: InputDecoration(
                             hintText: "Password",
                             prefixIcon: Icon(
@@ -143,28 +151,34 @@ class SignUpPage extends StatelessWidget {
               SizedBox(
                 height: 70,
               ),
-              Container(
-                  //Image Container
-                  width: w * 0.5, //Sets the width of the container
-                  height: h * 0.08, //Sets the height of the container
+              GestureDetector(
+                onTap: () {
+                  AuthController.instance.register(emailController.text.trim(),
+                      passwordController.text.trim());
+                },
+                child: Container(
+                    //Image Container
+                    width: w * 0.5, //Sets the width of the container
+                    height: h * 0.08, //Sets the height of the container
 
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(30),
-                      //Adding image to the container
-                      image: DecorationImage(
-                          image: AssetImage('assets/img/loginbtn.png'),
-                          fit:
-                              BoxFit.cover //To make the image fit the container
-                          )),
-                  child: Center(
-                    child: Text(
-                      "Sign Up",
-                      style: TextStyle(
-                          fontSize: 36,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  )),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(30),
+                        //Adding image to the container
+                        image: DecorationImage(
+                            image: AssetImage('assets/img/loginbtn.png'),
+                            fit: BoxFit
+                                .cover //To make the image fit the container
+                            )),
+                    child: Center(
+                      child: Text(
+                        "Sign Up",
+                        style: TextStyle(
+                            fontSize: 36,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    )),
+              ),
               SizedBox(
                 height: 10,
               ),
@@ -197,15 +211,34 @@ class SignUpPage extends StatelessWidget {
                       radius: 30, //outer circle
                       backgroundColor: Colors
                           .grey[500], //color between outer and inner circle
-                      child: CircleAvatar(
-                        radius: 25, //inner circle
-                        backgroundImage: AssetImage(
-                            // ignore: prefer_interpolation_to_compose_strings
-                            "assets/img/" +
-                                images[
-                                    index] //giving the path of the images.List is created in the begining.
+                      child: index == 1
+                          ? GestureDetector(
+                              onTap: () {
+                                AuthService().signInWithGoogle();
+                                
+                                AuthController.instance.register(emailController.text.trim(),
+                      passwordController.text.trim());
+                                // Add your onTap logic here for index=1 image
+                              },
+                              child: CircleAvatar(
+                                radius: 25, //inner circle
+                                backgroundImage: AssetImage(
+                                  // ignore: prefer_interpolation_to_compose_strings
+                                  "assets/img/" +
+                                      images[
+                                          index], //giving the path of the images.List is created in the begining.
+                                ),
+                              ),
+                            )
+                          : CircleAvatar(
+                              radius: 25, //inner circle
+                              backgroundImage: AssetImage(
+                                // ignore: prefer_interpolation_to_compose_strings
+                                "assets/img/" +
+                                    images[
+                                        index], //giving the path of the images.List is created in the begining.
+                              ),
                             ),
-                      ),
                     ),
                   );
                 }),

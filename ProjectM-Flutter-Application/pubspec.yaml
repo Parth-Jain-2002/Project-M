@@ -38,6 +38,9 @@ dependencies:
   permission_handler: ^11.2.0
   flutter_sms_inbox: ^1.0.3
   get:
+  firebase_auth: ^4.17.4
+  firebase_core: ^2.25.4
+  google_sign_in:
 
 dev_dependencies:
   flutter_test:
